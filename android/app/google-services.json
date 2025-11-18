@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "203852582334",
+    "project_id": "musikita-79f69",
+    "storage_bucket": "musikita-79f69.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:203852582334:android:5d8993dcafc080f1063def",
+        "android_client_info": {
+          "package_name": "com.musikita.musikita"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgjOUOJqsZ_i7Lpvp3WVJcKRVJADsb_qs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
