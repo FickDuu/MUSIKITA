@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:go_router/go_router.dart';
 import 'firebase_options.dart';
@@ -7,9 +8,17 @@ import 'core/constants/app_strings.dart';
 import 'presentation/splash/splash_screen.dart';
 import 'presentation/welcome/welcome_screen.dart';
 
-void main() async{
+void main() async {
+  // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Lock orientation to portrait mode
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
+  // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -31,14 +40,26 @@ class MyApp extends StatelessWidget {
   }
 }
 
+/// App routing configuration using go_router
 final GoRouter _router = GoRouter(
   initialLocation: '/',
   routes: [
-    GoRoute(path: '/',
+    GoRoute(
+      path: '/',
       builder: (context, state) => const SplashScreen(),
     ),
-    GoRoute(path: '/welcome',
+    GoRoute(
+      path: '/welcome',
       builder: (context, state) => const WelcomeScreen(),
     ),
+    // TODO: Add more routes as we build them
+    // GoRoute(
+    //   path: '/register',
+    //   builder: (context, state) => const RegisterScreen(),
+    // ),
+    // GoRoute(
+    //   path: '/login',
+    //   builder: (context, state) => const LoginScreen(),
+    // ),
   ],
 );
