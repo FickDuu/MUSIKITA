@@ -7,6 +7,8 @@ import 'core/theme/app_theme.dart';
 import 'core/constants/app_strings.dart';
 import 'presentation/splash/splash_screen.dart';
 import 'presentation/welcome/welcome_screen.dart';
+import 'presentation/auth/register/register_screen.dart';
+import 'presentation/auth/login/login_screen.dart';
 
 void main() async {
   // Ensure Flutter bindings are initialized
@@ -53,13 +55,13 @@ final GoRouter _router = GoRouter(
       builder: (context, state) => const WelcomeScreen(),
     ),
     // TODO: Add more routes as we build them
-    // GoRoute(
-    //   path: '/register',
-    //   builder: (context, state) => const RegisterScreen(),
-    // ),
-    // GoRoute(
-    //   path: '/login',
-    //   builder: (context, state) => const LoginScreen(),
-    // ),
+    GoRoute(
+      path: '/register',
+      builder: (context, state) => const RegisterScreen(),
+    ),
+    GoRoute(
+      path: '/login',
+      builder: (context, state) => const LoginScreen(),
+    ),
   ],
 );
