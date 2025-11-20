@@ -54,6 +54,21 @@ dependencies:
   intl: ^0.19.0
   image_picker: ^1.0.7
 
+  #Audio player
+  just_audio: ^0.9.36
+
+  #Calendar
+  table_calendar: ^3.0.9
+
+  #URL Launcher (Google Maps)
+  url_launcher: ^6.2.5
+
+  #File picker (music)
+  file_picker: ^6.1.1
+
+  #audio file info
+  audiotagger: ^2.2.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -92,10 +107,10 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
+  fonts:
+     - family: Docallisme
+       fonts:
+         - asset: assets/fonts/DocallismeOnStreet-ZVO1Z.otf
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro
