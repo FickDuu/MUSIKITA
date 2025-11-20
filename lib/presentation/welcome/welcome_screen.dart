@@ -65,15 +65,7 @@ class WelcomeScreen extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // TODO: Navigate to register screen
-                          // context.go('/register');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Register screen coming soon!'),
-                            ),
-                          );
-                        },
+                        onPressed: () => context.go('/register'),
                         child: const Text(AppStrings.getStarted),
                       ),
                     ),
