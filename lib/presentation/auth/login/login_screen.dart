@@ -40,23 +40,30 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await _authService.signInWithEmailAndPassword(
+      final appUser = await _authService.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(AppStrings.loginSuccess),
+          SnackBar(
+            content: Text('${AppStrings.loginSuccess} Welcome, ${appUser.username}!'),
             backgroundColor: AppColors.success,
+            duration: const Duration(seconds: 2),
           ),
         );
         // Navigate to home screen
         context.go('/home');
       }
+    } on Exception catch (e) {
+      if (mounted) {
+        _showError(e.toString().replaceAll('Exception: ', ''));
+      }
     } catch (e) {
-      _showError(e.toString());
+      if (mounted) {
+        _showError('An unexpected error occurred. Please try again.');
+      }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);

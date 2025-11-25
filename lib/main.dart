@@ -64,6 +64,14 @@ final GoRouter _router = GoRouter(
       path: '/login',
       builder: (context, state) => const LoginScreen(),
     ),
-    // TODO: Add home screens for musician and organizer
+    GoRoute(
+      path: '/home',
+      builder: (context, state) {
+        return const MainNavigation(
+          userRole: UserRole.musician,
+          userId: 'demo_user_id',
+        );
+      },
+    ),
   ],
 );

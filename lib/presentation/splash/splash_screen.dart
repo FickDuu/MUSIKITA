@@ -40,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     //navigate to welcome screen
     Future.delayed(const Duration(seconds: 3), (){
       if (mounted) {
-        context.go('/Welcome');
+        context.go('/welcome');
       }
     });
   }

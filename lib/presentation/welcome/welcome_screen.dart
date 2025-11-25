@@ -80,15 +80,7 @@ class WelcomeScreen extends StatelessWidget {
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         TextButton(
-                          onPressed: () {
-                            // TODO: Navigate to login screen
-                            // context.go('/login');
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Login screen coming soon!'),
-                              ),
-                            );
-                          },
+                          onPressed: () => context.go('/login'),
                           child: const Text(AppStrings.login),
                         ),
                       ],

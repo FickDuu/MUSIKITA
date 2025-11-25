@@ -3,68 +3,74 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/app_user.dart';
 import '../models/user_role.dart';
 
-//auth for firebase
+/// Authentication service for Firebase Auth operations
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  //current user stream
+  /// Get current user stream
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  //current user
+  /// Get current user
   User? get currentUser => _auth.currentUser;
 
-  //Register new
+  /// Register new user with email and password
   Future<AppUser> registerWithEmailAndPassword({
     required String email,
     required String password,
     required String username,
     required UserRole role,
   }) async {
-    try{
+    try {
+      // Create Firebase Auth user
       final UserCredential credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
       final user = credential.user;
-      if (user == null){
-        throw Exception('User creation failed');
+      if (user == null) {
+        throw Exception('User creation failed - no user returned');
       }
 
+      // Create app user object
       final appUser = AppUser(
-        uid:user.uid,
+        uid: user.uid,
         email: email,
         username: username,
         role: role,
         createdAt: DateTime.now(),
       );
 
-      //save to - users collection
+      // Save to Firestore - users collection
       await _firestore.collection('users').doc(user.uid).set(appUser.toJson());
 
-      //role-specific document
-      if(role == UserRole.musician){
-        await _firestore.collection('musicians') .doc(user.uid).set({
+      // Create role-specific document
+      if (role == UserRole.musician) {
+        await _firestore.collection('musicians').doc(user.uid).set({
           'uid': user.uid,
           'createdAt': Timestamp.now(),
+          // Additional musician fields will be added during profile setup
         });
       } else {
         await _firestore.collection('organizers').doc(user.uid).set({
           'uid': user.uid,
           'createdAt': Timestamp.now(),
+          // Additional organizer fields will be added during profile setup
         });
       }
 
       return appUser;
-    } on FirebaseAuthException catch (e){
-      throw _handleAuthException(e);
-    } catch (e){
+    } on FirebaseAuthException catch (e) {
+      throw Exception(_handleAuthException(e));
+    } on FirebaseException catch (e) {
+      throw Exception('Database error: ${e.message ?? e.toString()}');
+    } catch (e) {
       throw Exception('Registration failed: ${e.toString()}');
     }
   }
 
-  //sign in with email & password
+  /// Sign in with email and password
   Future<AppUser> signInWithEmailAndPassword({
     required String email,
     required String password,
@@ -77,61 +83,71 @@ class AuthService {
 
       final user = credential.user;
       if (user == null) {
-        throw Exception('Sign in failed');
+        throw Exception('Sign in failed - no user returned');
       }
 
-      //get user data
+      // Get user data from Firestore
       final doc = await _firestore.collection('users').doc(user.uid).get();
+
       if (!doc.exists) {
-        throw Exception('User not found');
+        throw Exception('User profile not found. Please contact support.');
       }
 
-      return AppUser.fromJson(doc.data()!);
-    }
-    on FirebaseAuthException catch (e) {
-      throw _handleAuthException(e);
+      final data = doc.data();
+      if (data == null) {
+        throw Exception('User data is empty. Please contact support.');
+      }
+
+      return AppUser.fromJson(data);
+    } on FirebaseAuthException catch (e) {
+      throw Exception(_handleAuthException(e));
+    } on FirebaseException catch (e) {
+      throw Exception('Database error: ${e.message ?? e.toString()}');
     } catch (e) {
+      if (e is Exception) rethrow;
       throw Exception('Sign in failed: ${e.toString()}');
     }
   }
 
-  //Sign out
-  Future<void> signOut() async{
-    try{
+  /// Sign out
+  Future<void> signOut() async {
+    try {
       await _auth.signOut();
-    } catch(e){
+    } catch (e) {
       throw Exception('Sign out failed: ${e.toString()}');
     }
   }
 
-  Future<AppUser?> getUserData(String uid) async{
-    try{
+  /// Get user data from Firestore
+  Future<AppUser?> getUserData(String uid) async {
+    try {
       final doc = await _firestore.collection('users').doc(uid).get();
-      if(!doc.exists) return null;
+      if (!doc.exists) return null;
       return AppUser.fromJson(doc.data()!);
-    } catch (e){
+    } catch (e) {
       return null;
     }
   }
 
-  String _handleAuthException(FirebaseAuthException e){
-    switch (e.code){
+  /// Handle Firebase Auth exceptions
+  String _handleAuthException(FirebaseAuthException e) {
+    switch (e.code) {
       case 'weak-password':
         return 'The password is too weak';
       case 'email-already-in-use':
-        return 'The email is already in use';
+        return 'An account already exists with this email';
       case 'invalid-email':
-        return 'The email is invalid';
+        return 'The email address is invalid';
       case 'user-not-found':
-        return 'The user is not found';
+        return 'No user found with this email';
       case 'wrong-password':
-        return 'The password is wrong';
+        return 'Incorrect password';
       case 'user-disabled':
-        return 'The user is disabled';
+        return 'This account has been disabled';
       case 'too-many-requests':
         return 'Too many attempts. Please try again later';
       case 'operation-not-allowed':
-        return 'Operation not allowed';
+        return 'This operation is not allowed';
       default:
         return 'Authentication error: ${e.message}';
     }

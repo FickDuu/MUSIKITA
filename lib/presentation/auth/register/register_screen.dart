@@ -51,7 +51,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await _authService.registerWithEmailAndPassword(
+      final appUser = await _authService.registerWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
         username: _usernameController.text.trim(),
@@ -60,16 +60,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(AppStrings.registrationSuccess),
+          SnackBar(
+            content: Text('${AppStrings.registrationSuccess} Welcome, ${appUser.username}!'),
             backgroundColor: AppColors.success,
+            duration: const Duration(seconds: 2),
           ),
         );
         // Navigate to home screen
         context.go('/home');
       }
+    } on Exception catch (e) {
+      if (mounted) {
+        _showError(e.toString().replaceAll('Exception: ', ''));
+      }
     } catch (e) {
-      _showError(e.toString());
+      if (mounted) {
+        _showError('Registration failed. Please try again.');
+      }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -93,7 +100,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         title: const Text(AppStrings.signUp),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.go('/welcome'),
         ),
       ),
       body: AppBackground(
