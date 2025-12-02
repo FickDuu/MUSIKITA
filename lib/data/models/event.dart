@@ -93,7 +93,7 @@ class Event {
       slotsTotal: json['slotsTotal'] as int,
       createdAt: (json['createdAt'] as Timestamp).toDate(),
       status: json['status'] as String? ?? 'open',
-      imageURL: json['imageURL'] as String,
+      imageURL: json['imageURL'] as String?,
     );
   }
 

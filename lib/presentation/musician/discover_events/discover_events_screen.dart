@@ -138,6 +138,8 @@ class _DiscoverEventsScreenState extends State<DiscoverEventsScreen> {
 
         // Error state
         if (snapshot.hasError) {
+          print('FIRESTORE ERROR: ${snapshot.error}');
+          print('STACK TRACE: ${snapshot.stackTrace}');
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(32.0),
