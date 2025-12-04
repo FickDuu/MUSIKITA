@@ -122,6 +122,7 @@ class EventService {
           .collection('event_applications')
           .where('musicianId', isEqualTo: musicianId)
           .where('eventId', isEqualTo: eventId)
+          .where('status', whereIn: ['pending', 'accepted'])
           .limit(1)
           .get();
 
@@ -213,8 +214,8 @@ class EventService {
         .orderBy('appliedAt', descending: true)
         .snapshots()
         .map((snapshot) => snapshot.docs
-          .map((doc) => EventApplication.fromJson(doc.data()))
-         .toList());
+        .map((doc) => EventApplication.fromJson(doc.data()))
+        .toList());
   }
 
   //get pending application
@@ -226,8 +227,8 @@ class EventService {
         .orderBy('appliedAt', descending: true)
         .snapshots()
         .map((snapshot) => snapshot.docs
-          .map((doc) => EventApplication.fromJson(doc.data()))
-         .toList());
+        .map((doc) => EventApplication.fromJson(doc.data()))
+        .toList());
   }
 
   //get accepted applications
@@ -239,8 +240,8 @@ class EventService {
         .orderBy('appliedAt', descending: true)
         .snapshots()
         .map((snapshot) => snapshot.docs
-          .map((doc) => EventApplication.fromJson(doc.data()))
-          .toList());
+        .map((doc) => EventApplication.fromJson(doc.data()))
+        .toList());
   }
 
   //cancel application
@@ -297,13 +298,13 @@ class EventService {
 
   // Get events that musician has NOT applied to
   Future<List<Event>> getUnappliedEvents(
-    String musicianId, {
-      DateTime? startDate,
-      DateTime? endDate,
-      double? maxDistance,
-      double? userLatitude,
-      double? userLongitude,
-    }) async{
+      String musicianId, {
+        DateTime? startDate,
+        DateTime? endDate,
+        double? maxDistance,
+        double? userLatitude,
+        double? userLongitude,
+      }) async{
     try{
       Query query = _firestore.collection('events').where('status', isEqualTo: 'open');
       if(startDate != null){
@@ -325,8 +326,8 @@ class EventService {
           .get();
 
       final appliedEventIds = applicationsSnapshot.docs
-        .map((doc) => doc.data()['eventId'] as String)
-        .toSet();
+          .map((doc) => doc.data()['eventId'] as String)
+          .toSet();
 
       var filteredEvents = events.where((event) => !appliedEventIds.contains(event.id)).toList();
 
@@ -375,5 +376,59 @@ class EventService {
       }
     }
     return false;
+  }
+
+  //Stream version - for real time updates
+  Stream<List<Event>> getUnappliedEventsStream(
+      String musicianId,{
+        DateTime? startDate,
+        DateTime? endDate,
+      }){
+    return _firestore
+        .collection('event_applications')
+        .where('musicianId', isEqualTo: musicianId)
+        .where('status', whereIn: ['pending', 'accepted'])
+        .snapshots()
+        .asyncMap((applicationsSnapshot) async{
+      final appliedEventIds = applicationsSnapshot.docs
+          .map((doc) => doc.data()['eventId'] as String)
+          .toSet();
+
+      Query query = _firestore.collection('events').where('status', isEqualTo: 'open');
+
+      if(startDate != null){
+        query = query.where('eventDate', isGreaterThanOrEqualTo: startDate);
+      }
+      if(endDate !=null){
+        query = query.where('eventDate', isLessThanOrEqualTo: endDate);
+      }
+
+      final eventsSnapshot = await query.get();
+      final events = eventsSnapshot.docs.map((doc) => Event.fromJson({
+        ...doc.data() as Map<String, dynamic>,
+        'id': doc.id,
+      })).toList();
+
+      var filteredEvents = events.where((event) => !appliedEventIds.contains(event.id)).toList();
+
+      final acceptedSnapshot = await _firestore.collection('event_applications')
+          .where('musicianId', isEqualTo: musicianId).where('status', isEqualTo: 'accepted').get();
+
+      final acceptedEventIds = acceptedSnapshot.docs.map((doc) => doc.data()['eventId'] as String).toList();
+
+      final acceptedEvents = await Future.wait(
+        acceptedEventIds.map((id) => getEventById(id)),
+      );
+
+      final validAcceptedEvents = acceptedEvents.whereType<Event>().toList();
+
+      filteredEvents = filteredEvents.where((event){
+        return !_hasTimeClash(event, validAcceptedEvents);
+      }).toList();
+
+      filteredEvents.sort((a, b) => a.eventDate.compareTo(b.eventDate));
+
+      return filteredEvents;
+    });
   }
 }

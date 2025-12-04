@@ -124,8 +124,12 @@ class _DiscoverEventsScreenState extends State<DiscoverEventsScreen> {
   }
 
   Widget _buildEventsList() {
-    return FutureBuilder<List<Event>>(
-      future: _eventService.getUnappliedEvents(widget.userId),
+    return StreamBuilder<List<Event>>(
+      stream: _eventService.getUnappliedEventsStream(
+          widget.userId,
+        startDate: _selectedStartDate,
+        endDate: _selectedEndDate,
+      ),
       builder: (context, snapshot) {
         // Loading state
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -178,7 +182,9 @@ class _DiscoverEventsScreenState extends State<DiscoverEventsScreen> {
         List<Event> events = snapshot.data ?? [];
 
         // Apply filters
-        events = _applyFilters(events);
+        if(_maxDistance != null){
+          //distance filtering
+        }
 
         // Empty state
         if (events.isEmpty) {
@@ -234,6 +240,7 @@ class _DiscoverEventsScreenState extends State<DiscoverEventsScreen> {
         return RefreshIndicator(
           onRefresh: () async {
             setState(() {});
+            await Future.delayed(const Duration(milliseconds: 500));
           },
           color: AppColors.primary,
           child: ListView.builder(
@@ -248,7 +255,7 @@ class _DiscoverEventsScreenState extends State<DiscoverEventsScreen> {
                   userId: widget.userId,
                   onApplied: () {
                     // Refresh the list after applying
-                    setState(() {});
+                    // setState(() {});
                   },
                 ),
               );
