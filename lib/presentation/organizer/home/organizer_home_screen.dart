@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:musikita/data/models/app_user.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_background.dart';
@@ -8,10 +10,10 @@ import '../../../data/services/profile_service.dart';
 import 'widgets/events_tab.dart';
 import 'widgets/applications_tab.dart';
 import 'widgets/analytics_tab.dart';
+import '../create_event/create_event_screen.dart';
 
-//organizer's version of homescreen
-//kinda same as musicians version, except the midnav tab contents vary
-class OrganizerHomeScreen extends StatefulWidget{
+/// Organizer home screen with create event FAB
+class OrganizerHomeScreen extends StatefulWidget {
   final String userId;
 
   const OrganizerHomeScreen({
@@ -23,7 +25,8 @@ class OrganizerHomeScreen extends StatefulWidget{
   State<OrganizerHomeScreen> createState() => _OrganizerHomeScreenState();
 }
 
-class _OrganizerHomeScreenState extends State<OrganizerHomeScreen> with SingleTickerProviderStateMixin{
+class _OrganizerHomeScreenState extends State<OrganizerHomeScreen>
+    with SingleTickerProviderStateMixin {
   late ScrollController _scrollController;
   late TabController _tabController;
   final _profileService = ProfileService();
@@ -33,16 +36,16 @@ class _OrganizerHomeScreenState extends State<OrganizerHomeScreen> with SingleTi
   String? _bio;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(_onScroll);
     _tabController = TabController(length: 3, vsync: this);
     _loadBio();
   }
 
-  Future<void> _loadBio() async{
-    final bio = await _profileService.getMusicianBio(widget.userId);
-    if(mounted){
+  Future<void> _loadBio() async {
+    final bio = await _profileService.getOrganizerBio(widget.userId);
+    if (mounted) {
       setState(() {
         _bio = bio;
       });
@@ -50,15 +53,15 @@ class _OrganizerHomeScreenState extends State<OrganizerHomeScreen> with SingleTi
   }
 
   @override
-  void dispose(){
+  void dispose() {
     _scrollController.dispose();
     _tabController.dispose();
     super.dispose();
   }
 
-  void _onScroll(){
+  void _onScroll() {
     final shouldCollapse = _scrollController.offset > _collapseThreshold;
-    if (shouldCollapse != _isHeaderCollapsed){
+    if (shouldCollapse != _isHeaderCollapsed) {
       setState(() => _isHeaderCollapsed = shouldCollapse);
     }
   }
@@ -83,17 +86,7 @@ class _OrganizerHomeScreenState extends State<OrganizerHomeScreen> with SingleTi
                 flexibleSpace: FlexibleSpaceBar(
                   background: _buildProfileHeader(appUser),
                   titlePadding: EdgeInsets.zero,
-                  title: _isHeaderCollapsed
-                      ? Text(
-                    appUser?.username ?? 'Organizer',
-                    style: const TextStyle(
-                      fontFamily: AppTheme.artistUsernameFont,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.white,
-                    ),
-                  )
-                      : null,
+                  title: null,
                 ),
               ),
 
@@ -129,7 +122,7 @@ class _OrganizerHomeScreenState extends State<OrganizerHomeScreen> with SingleTi
     );
   }
 
-  Widget _buildProfileHeader(appUser) {
+  Widget _buildProfileHeader(AppUser? appUser) {
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -215,12 +208,10 @@ class _OrganizerHomeScreenState extends State<OrganizerHomeScreen> with SingleTi
                   final authProvider =
                   Provider.of<AuthProvider>(context, listen: false);
                   await authProvider.signOut();
-                  if (context.mounted) {
-                    // Navigate to auth
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                      '/auth',
-                          (route) => false,
-                    );
+                  if(mounted) {
+                    if (context.mounted) {
+                      context.go('/auth');
+                    }
                   }
                 },
                 icon: const Icon(
@@ -238,13 +229,7 @@ class _OrganizerHomeScreenState extends State<OrganizerHomeScreen> with SingleTi
               // Edit Profile Button
               IconButton(
                 onPressed: () {
-                  // TODO: Navigate to edit profile
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Edit profile coming soon!'),
-                      backgroundColor: AppColors.primary,
-                    ),
-                  );
+                  context.push('/edit-profile');
                 },
                 icon: const Icon(
                   Icons.edit,
@@ -264,6 +249,7 @@ class _OrganizerHomeScreenState extends State<OrganizerHomeScreen> with SingleTi
       ],
     );
   }
+
   Widget _buildProfileImage(String? profileImageUrl) {
     if (profileImageUrl != null && profileImageUrl.isNotEmpty) {
       return Image.network(
@@ -286,6 +272,7 @@ class _OrganizerHomeScreenState extends State<OrganizerHomeScreen> with SingleTi
     );
   }
 }
+
 /// Custom delegate for pinned tab bar
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar _tabBar;
