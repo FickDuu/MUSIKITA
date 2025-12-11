@@ -86,18 +86,21 @@ class _ApplicationsTabState extends State<ApplicationsTab> with SingleTickerProv
             ),
             tabs: _filterOptions.map((label){
               return Tab(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        label,
-                        overflow: TextOverflow.ellipsis,
+                child: Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          label,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    _buildCountBadge(label),
-                  ],
+                      const SizedBox(width: 4),
+                      _buildCountBadge(label),
+                    ],
+                  ),
                 ),
               );
             }).toList(),

@@ -3,7 +3,6 @@ import 'package:just_audio/just_audio.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../data/models/music_post.dart';
-import '../../../../data/models/musician.dart';
 import '../../../../data/services/musician_discovery_service.dart';
 import '../../../common/widgets/artist_info_bottom_sheet.dart';
 import '../../profile/musician_profile_screen.dart';

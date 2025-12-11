@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../data/models/event.dart';
 import '../../../../data/services/event_service.dart';
+import 'package:provider/provider.dart';
+import '../../../../data/providers/auth_provider.dart';
 
 /// Event card widget - displays event details with apply functionality
 class EventCard extends StatefulWidget {
@@ -67,8 +69,9 @@ class _EventCardState extends State<EventCard> {
 
     try {
       // Get user name from auth or use placeholder
-      // In production, get from auth provider
-      final musicianName = 'Current User'; // TODO: Get from auth provider
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final currentUser = authProvider.appUser;
+      final musicianName = currentUser?.username ?? 'Unknown Musician';
 
       await _eventService.applyToEvent(
         eventId: widget.event.id,

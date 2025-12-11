@@ -1,4 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../data/providers/auth_provider.dart' as app_auth;
+import '../../../data/services/messaging_service.dart';
+import '../../../data/models/conversation.dart';
+import '../../musician/messages/chat_screen.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/models/musician.dart';
 
@@ -17,21 +23,21 @@ class ArtistInfoBottomSheet extends StatelessWidget {
   });
 
   /// Show the bottom sheet
-  static void show(
-      BuildContext context, {
-        required Musician musician,
-        required VoidCallback onViewProfile,
-        VoidCallback? onMessage,
-      }) {
+  static void show(BuildContext context, {
+    required Musician musician,
+    required VoidCallback onViewProfile,
+    VoidCallback? onMessage,
+  }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ArtistInfoBottomSheet(
-        musician: musician,
-        onViewProfile: onViewProfile,
-        onMessage: onMessage,
-      ),
+      builder: (context) =>
+          ArtistInfoBottomSheet(
+            musician: musician,
+            onViewProfile: onViewProfile,
+            onMessage: onMessage,
+          ),
     );
   }
 
@@ -90,7 +96,11 @@ class ArtistInfoBottomSheet extends StatelessWidget {
                   children: [
                     Text(
                       musician.artistName ?? 'Unknown Artist',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      style: Theme
+                          .of(context)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                       maxLines: 2,
@@ -100,7 +110,11 @@ class ArtistInfoBottomSheet extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         musician.experience!,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        style: Theme
+                            .of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(
                           color: AppColors.textSecondary,
                         ),
                       ),
@@ -144,7 +158,10 @@ class ArtistInfoBottomSheet extends StatelessWidget {
           if (musician.bio != null && musician.bio!.isNotEmpty) ...[
             Text(
               musician.bio!,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .bodyMedium,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
@@ -184,10 +201,66 @@ class ArtistInfoBottomSheet extends StatelessWidget {
               // Message button
               Expanded(
                 child: OutlinedButton(
-                  onPressed: onMessage ??
-                          () {
+                  onPressed: () async {
                         Navigator.pop(context);
-                        _showComingSoonMessage(context);
+                        //_showComingSoonMessage(context);
+
+                        if (onMessage != null) {
+                          onMessage!();
+                          return;
+                        }
+
+                        try {
+                          final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                          final currentUser = authProvider.appUser;
+
+                          if (currentUser == null) return;
+
+                          final messagingService = MessagingService();
+                          final conversationId = await messagingService.getOrCreateConversation(
+                            currentUserId: currentUser.id,
+                            otherUserId: musician.userId,
+                            currentUserName: currentUser.username,
+                            currentUserRole: currentUser.role
+                                .toString()
+                                .split('.')
+                                .last,
+                            otherUserName: musician.artistName ?? 'Unknown',
+                            otherUserRole: 'musician',
+                            currentUserImageUrl: currentUser.profileImageUrl,
+                            otherUserImageUrl: musician.profileImageUrl,
+                          );
+
+                          if (context.mounted) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatScreen(
+                                      conversationId: conversationId,
+                                      currentUserId: currentUser.uid,
+                                      otherUser: ParticipantDetail(
+                                        name: musician.artistName ?? 'Unknown',
+                                        role: 'musician',
+                                        profileImageUrl: musician
+                                            .profileImageUrl,
+                                      ),
+                                      otherUserId: musician.userId,
+                                    ),
+                              ),
+                            );
+                          }
+                        }
+                        catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Failed to start conversation: ${e
+                                    .toString()}'),
+                                backgroundColor: AppColors.error,
+                              ),
+                            );
+                          }
+                        }
                       },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.primary,
@@ -210,7 +283,10 @@ class ArtistInfoBottomSheet extends StatelessWidget {
           ),
 
           // Bottom padding for safe area
-          SizedBox(height: MediaQuery.of(context).padding.bottom),
+          SizedBox(height: MediaQuery
+              .of(context)
+              .padding
+              .bottom),
         ],
       ),
     );
@@ -224,31 +300,5 @@ class ArtistInfoBottomSheet extends StatelessWidget {
       return parts[0].substring(0, 1).toUpperCase();
     }
     return (parts[0].substring(0, 1) + parts[1].substring(0, 1)).toUpperCase();
-  }
-
-  /// Show "Coming Soon" message for messaging feature
-  void _showComingSoonMessage(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.message, color: Colors.white),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Messaging feature coming soon!',
-                style: TextStyle(fontSize: 15),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: AppColors.primary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        duration: const Duration(seconds: 2),
-      ),
-    );
   }
 }

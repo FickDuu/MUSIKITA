@@ -6,7 +6,7 @@ import '../../../core/widgets/app_background.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/models/user_role.dart';
 import '../../../data/services/auth_service.dart';
-import '../widgets/role_selection_card.dart';
+import 'common/widgets/role_selection_card.dart';
 
 /// Registration screen with role selection
 class RegisterScreen extends StatefulWidget {
