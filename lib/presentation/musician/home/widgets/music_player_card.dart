@@ -159,29 +159,6 @@ class _MusicPlayerCardState extends State<MusicPlayerCard> {
 
     // Otherwise, fetch musician and show bottom sheet
     try {
-      // Show loading
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                SizedBox(
-                  width: AppDimensions.progressIndicatorSmall,
-                  height: AppDimensions.progressIndicatorSmall,
-                  child: CircularProgressIndicator(
-                    strokeWidth: AppDimensions.progressIndicatorStroke,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(width: AppDimensions.spacingSmall),
-                Text('Loading artist info...'),
-              ],
-            ),
-            duration: Duration(seconds: AppLimits.snackbarDurationSeconds),
-          ),
-        );
-      }
-
       // Fetch musician data
       final musician = await _musicianService.getMusicianById(widget.musicPost.userId);
 

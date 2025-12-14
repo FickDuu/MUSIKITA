@@ -50,21 +50,11 @@ class _DiscoverMusicScreenState extends State<DiscoverMusicScreen> {
   }
 
   Widget _buildMusicFeed(String? userRole, String userId) {
-    // Musicians exclude their own music, organizers see all
-    final bool excludeOwnMusic = userRole == 'musician';
-
     return StreamBuilder<QuerySnapshot>(
-      stream: excludeOwnMusic
-          ? _firestore
-              .collection(AppConfig.musicPostsCollection)
-              .where('userId', isNotEqualTo: userId)
-              .orderBy('userId') // Required for isNotEqualTo
-              .orderBy('uploadedAt', descending: true)
-              .snapshots()
-          : _firestore
-              .collection(AppConfig.musicPostsCollection)
-              .orderBy('uploadedAt', descending: true)
-              .snapshots(),
+      stream: _firestore
+          .collection(AppConfig.musicPostsCollection)
+          .orderBy('uploadedAt', descending: true)
+          .snapshots(),
       builder: (context, snapshot) {
         // Loading state
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -79,19 +69,22 @@ class _DiscoverMusicScreenState extends State<DiscoverMusicScreen> {
           return _buildErrorState();
         }
 
-        // Parse music posts
-        final musicPosts = snapshot.data!.docs.map((doc) {
-          try {
-            final data = doc.data() as Map<String, dynamic>;
-            return MusicPost.fromJson({
-              ...data,
-              'id': doc.id,
-            });
-          } catch (e) {
-            LoggerService.error('Error parsing music post ${doc.id}: $e', tag: _tag);
-            return null;
-          }
-        }).whereType<MusicPost>().toList();
+        // Parse music posts - show ALL posts including own
+        final musicPosts = snapshot.data!.docs
+            .map((doc) {
+              try {
+                final data = doc.data() as Map<String, dynamic>;
+                return MusicPost.fromJson({
+                  ...data,
+                  'id': doc.id,
+                });
+              } catch (e) {
+                LoggerService.error('Error parsing music post ${doc.id}: $e', tag: _tag);
+                return null;
+              }
+            })
+            .whereType<MusicPost>()
+            .toList();
 
         // Empty state
         if (musicPosts.isEmpty) {

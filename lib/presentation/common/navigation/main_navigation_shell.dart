@@ -69,8 +69,8 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         break;
       case 4: // Profile
         context.go(userRole == 'musician'
-            ? AppRoutes.musicianOwnProfile
-            : AppRoutes.organizerOwnProfile);
+            ? AppRoutes.musicianHome
+            : AppRoutes.organizerHome);
         break;
     }
   }
@@ -114,9 +114,11 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         shape: const CircularNotchedRectangle(),
         notchMargin: 8.0,
         height: AppDimensions.bottomNavHeight,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
             _buildNavItem(
               context: context,
               icon: Icons.music_note_outlined,
@@ -133,7 +135,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
               index: 1,
               selectedIndex: selectedIndex,
             ),
-            const SizedBox(width: 48), // Space for FAB
+            const SizedBox(width: 40), // Space for FAB
             _buildNavItem(
               context: context,
               icon: Icons.message_outlined,
@@ -151,6 +153,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
               selectedIndex: selectedIndex,
             ),
           ],
+        ),
         ),
       ),
     );
@@ -177,11 +180,11 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
               color: isSelected ? AppColors.primary : AppColors.grey,
               size: 24,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 0),
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 11,
                 color: isSelected ? AppColors.primary : AppColors.grey,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),

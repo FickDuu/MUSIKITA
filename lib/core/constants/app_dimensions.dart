@@ -155,5 +155,5 @@ class AppDimensions {
   static const double tabIconSize = 28.0;
 
   //==Bottom Nav Height==//
-  static const double bottomNavHeight = 60;
+  static const double bottomNavHeight = 70;
 }

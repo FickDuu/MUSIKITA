@@ -38,7 +38,11 @@ class RouteGuards {
 
   /// Check if a route is public (doesn't require authentication)
   static bool _isPublicRoute(String path) {
-    return _publicRoutes.any((route) => path.startsWith(route));
+    if (path == AppRoutes.root) return true;
+
+    return _publicRoutes
+        .where((route) => route != AppRoutes.root)
+        .any((route) => path.startsWith(route));
   }
 
   /// Get home route based on user role
